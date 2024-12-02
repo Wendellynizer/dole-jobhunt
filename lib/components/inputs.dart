@@ -5,9 +5,13 @@ class TextInput extends StatelessWidget {
   const TextInput({
     super.key,
     required this.hintText,
+    this.autoFocus,
+    this.controller
   });
 
   final String hintText;
+  final bool? autoFocus;
+  final TextEditingController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +23,8 @@ class TextInput extends StatelessWidget {
 
 
       child: TextField(
+        controller: controller,
+        autofocus: (autoFocus == null)? false : autoFocus!,
         decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(color: hintColor),
@@ -39,10 +45,12 @@ class TextInput extends StatelessWidget {
 class NumberInput extends StatelessWidget {
   const NumberInput({
     super.key,
-    required this.hintText
+    required this.hintText,
+    this.controller
   });
 
   final String hintText;
+  final TextEditingController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +61,7 @@ class NumberInput extends StatelessWidget {
       borderRadius: borderSM,
 
       child: TextField(
+        controller: controller,
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
           hintText: hintText,
@@ -75,11 +84,13 @@ class DropdownInput extends StatelessWidget {
   const DropdownInput({
     super.key,
     required this.hintText,
-    required this.options
+    required this.options,
+    required this.onSelected
   });
 
   final String hintText;
   final List<DropdownMenuEntry<dynamic>> options;
+  final ValueChanged<dynamic> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +101,7 @@ class DropdownInput extends StatelessWidget {
       borderRadius: borderSM,
 
       child: DropdownMenu(
+        onSelected: onSelected,
         menuStyle: MenuStyle(
           backgroundColor: WidgetStatePropertyAll(light),
         ),
@@ -112,11 +124,13 @@ class TextArea extends StatelessWidget {
   const TextArea({
     super.key,
     required this.hintText,
-    required this.maxLines
+    required this.maxLines,
+    this.controller
   });
 
   final String hintText;
   final int maxLines;
+  final TextEditingController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +141,7 @@ class TextArea extends StatelessWidget {
       borderRadius: borderSM,
 
       child: TextField(
+        controller: controller,
         maxLines: maxLines,
         decoration: InputDecoration(
           hintText: hintText,

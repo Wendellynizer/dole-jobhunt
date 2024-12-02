@@ -1,9 +1,11 @@
 import 'package:dole_jobhunt/components/buttons.dart';
 import 'package:dole_jobhunt/components/inputs.dart';
+import 'package:dole_jobhunt/services/firestore_service.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_stepper/easy_stepper.dart';
 
 import '../../globals/style.dart';
+import '../../models/job.dart';
 
 class CreateJobPage extends StatefulWidget {
   const CreateJobPage({super.key});
@@ -15,20 +17,23 @@ class CreateJobPage extends StatefulWidget {
 class _CreateJobPageState extends State<CreateJobPage> {
 
   int _currentStep = 0;
+  bool _isAddingReq = false;
 
-  void _onStepContinue() {
-    setState(() {
-      if(_currentStep < _steps().length - 1) _currentStep++;
-    });
-  }
+  List<String> _requirements = [];
 
-  void _onStepBack() {
-    setState(() {
-      if(_currentStep > 0) _currentStep--;
-    });
-  }
+  // dropdown user data
+  TextEditingController jobTitleCtrl = TextEditingController();
+  TextEditingController minSalaryCtrl = TextEditingController();
+  TextEditingController maxSalaryCtrl = TextEditingController();
+  TextEditingController experienceCtrl = TextEditingController();
+  TextEditingController jobSummaryCtrl = TextEditingController();
+  TextEditingController reqController = TextEditingController();
+  String jobCategory = '';
+  String jobType = '';
 
-  List<RequirementField> _requirementFields = [];
+  // action button
+  String buttonText = 'Next';
+
 
   List<EasyStep> _steps() => [
     EasyStep(
@@ -48,6 +53,48 @@ class _CreateJobPageState extends State<CreateJobPage> {
     )
   ];
 
+  void _onStepContinue() {
+    setState(() {
+      if(_currentStep < _steps().length - 1) {
+        _currentStep++;
+      }
+
+      buttonText = (_currentStep < _steps().length - 2)? 'Next' : 'Save';
+    });
+  }
+
+  void _onStepBack() {
+    setState(() {
+      if(_currentStep > 0) _currentStep--;
+
+      buttonText = (_currentStep < _steps().length - 1)? 'Next' : 'Save';
+    });
+  }
+
+  void _toggleRequirementFieldState() {
+    setState(() {
+      _isAddingReq = !_isAddingReq;
+      // reqController.clear();
+    });
+  }
+
+  void _addRequirement(String text) {
+    setState(() {
+      if(reqController.text != '') {
+        _requirements.add(text);
+        reqController.clear();
+      }
+    });
+  }
+
+  void _removeRequirement(int idx) {
+    setState(() {
+      _requirements.removeAt(idx);
+    });
+  }
+
+
+
   // controls the widget the body is showing
   Widget _bodyBuilder(int step) {
     switch(step) {
@@ -56,86 +103,6 @@ class _CreateJobPageState extends State<CreateJobPage> {
     }
 
     return _jobDetails();
-  }
-
-  // job details widget
-  Widget _jobDetails() {
-    return Padding(
-      padding: horizontal,
-      child:  Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Job Details', style: TextStyle(
-            fontSize: text_h5,
-            fontWeight: bold
-          ),),
-
-          const SizedBox(height: 20,),
-
-        // position name
-          TextInput(hintText: "Position"),
-
-          const SizedBox(height: 15,),
-
-          // salary
-          NumberInput(hintText: "Min salary",),
-
-          const SizedBox(height: 15,),
-
-          NumberInput(hintText: "Max salary",),
-
-          const SizedBox(height: 15,),
-
-          // job type dropdown
-          const DropdownInput(
-            hintText: 'Job Type',
-            options: const [
-            DropdownMenuEntry<String>(value: "full time", label: "Full Time"),
-            DropdownMenuEntry<String>(value: "part time", label: "Part Time")
-            ]
-          )
-        ],
-      )
-    );
-  }
-
-  // job description widget
-  Widget _jobDescription() {
-    return Padding(
-        padding: horizontal,
-        child:  Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Job Description', style: TextStyle(
-                fontSize: text_h5,
-                fontWeight: bold
-            ),),
-
-            const SizedBox(height: 20,),
-
-            // job summary text area
-            TextArea(hintText: "Job Summary", maxLines: 10,),
-
-            const SizedBox(height: 30,),
-
-            // job requirements
-            Text('Job Requirements', style: TextStyle(fontWeight: semibold),),
-
-            const SizedBox(height: 20,),
-
-            Column(
-              children: _requirementFields
-            ),
-
-            // prototype
-            Button(
-                content: Icon(Icons.add_rounded, color: light,),
-                color: secondaryColor,
-                onPressed: (){},
-            )
-          ]
-        )
-    );
   }
 
   // action buttons
@@ -155,13 +122,216 @@ class _CreateJobPageState extends State<CreateJobPage> {
           const SizedBox(width: 15,),
 
           Button(
-              content: Text('Next', style: TextStyle(fontSize: text_lg, color: light),),
+              content: Text(
+                buttonText,
+                style: TextStyle(fontSize: text_lg, color: light),
+              ),
               color: secondaryColor,
               borderRadius: borderSM,
-              onPressed: _onStepContinue
+              onPressed: () {
+                // execute save function of _current step is in last step
+                if(_currentStep >= _steps().length - 1) {
+
+                  Job job = Job(
+                    category: jobCategory,
+                    jobTitle: jobTitleCtrl.text,
+                    minSalary: double.parse(minSalaryCtrl.text),
+                    maxSalary: double.parse(maxSalaryCtrl.text),
+                    experience: int.parse(experienceCtrl.text),
+                    jobType: jobType,
+                    jobSummary: jobSummaryCtrl.text,
+                    requirements: _requirements,
+                  );
+
+                  FireStoreService.create('jobs', job.toJSON());
+                  return;
+                }
+
+                _onStepContinue();
+              }
           ),
         ],
       ),
+    );
+  }
+
+  // job details widget
+  Widget _jobDetails() {
+    return Padding(
+      padding: horizontal,
+      child:  Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Job Details', style: TextStyle(
+            fontSize: text_h5,
+            fontWeight: bold
+          ),),
+
+
+          const SizedBox(height: 20,),
+
+          // job category dropdown
+          DropdownInput(
+              hintText: 'Job Category',
+              options: const [
+                DropdownMenuEntry<String>(value: "Information Technology", label: "Information Technology"),
+                DropdownMenuEntry<String>(value: "Digital Creator", label: "Digital Creator"),
+              ],
+
+              onSelected: (item) {
+                jobCategory = item;
+              },
+          ),
+
+          const SizedBox(height: 15,),
+
+        // position name
+          TextInput(hintText: "Job Title", controller: jobTitleCtrl,),
+
+          const SizedBox(height: 15,),
+
+          // salary
+          NumberInput(hintText: "Min salary", controller: minSalaryCtrl),
+
+          const SizedBox(height: 15,),
+
+          NumberInput(hintText: "Max salary", controller: maxSalaryCtrl),
+
+          const SizedBox(height: 15,),
+
+          NumberInput(hintText: "No. of experience", controller: experienceCtrl),
+
+          const SizedBox(height: 15,),
+
+          // job type dropdown
+          DropdownInput(
+            hintText: 'Job Type',
+            options: const [
+            DropdownMenuEntry<String>(value: "full time", label: "Full Time"),
+            DropdownMenuEntry<String>(value: "part time", label: "Part Time")
+            ],
+
+            onSelected: (item) {
+              jobType = item;
+            },
+          )
+        ],
+      )
+    );
+  }
+
+  // job description widget
+  Widget _jobDescription() {
+    return Padding(
+        padding: horizontal,
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            Text('Job Description', style: TextStyle(
+                fontSize: text_h5,
+                fontWeight: bold
+            ),),
+
+            const SizedBox(height: 20,),
+
+            // job summary text area
+            TextArea(hintText: "Job Summary", maxLines: 10, controller: jobSummaryCtrl),
+
+            const SizedBox(height: 30,),
+
+            // job requirements
+            Text('Job Requirements', style: TextStyle(fontSize: text_lg, fontWeight: semibold),),
+
+            const SizedBox(height: 20,),
+
+            // shows/hide the requirement field and button
+            _isAddingReq
+            ? Row(
+              // requirement field
+              children: [
+                Expanded(
+                    child: TextInput(
+                      hintText: "Enter requirement...",
+                      controller: reqController,
+                    )
+                ),
+
+                const SizedBox(width: 5,),
+
+                // action buttons
+                // add requirement button
+                IconButton(
+                  onPressed: () => _addRequirement(reqController.text),
+                  icon: Icon(Icons.check_rounded, color: secondaryColor,),
+
+                ),
+
+                // responsible for closing the requirement field
+                IconButton(
+                  onPressed: _toggleRequirementFieldState,
+                  icon: Icon(Icons.close_rounded, color: red,),
+
+                ),
+              ],
+            )
+
+            : Button(
+                // responsible for showing the requirement field
+                content: Icon(Icons.add_rounded, color: light,),
+                color: secondaryColor,
+                onPressed: _toggleRequirementFieldState,
+              ),
+
+            const SizedBox(height: 20,),
+
+            // list of requirements
+            Column(
+              children: _requirements.asMap().entries.map((entry) {
+                int index = entry.key;
+                String value = entry.value;
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.circle, color: secondaryColor, size: 10,),
+
+                        const SizedBox(width: 10),
+
+                        // requirement list item title
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.63
+                          ),
+
+                          child: Text(
+                            value,
+                            style: TextStyle(fontSize: text_md, fontWeight: medium),
+                            softWrap: true,
+                          ),
+                        ),
+                    ],
+                    ),
+
+                    const SizedBox(width: 5),
+
+                    IconButton(
+                      onPressed: () => _removeRequirement(index),
+                      icon: Icon(Icons.delete_rounded, color: red),
+                      padding: EdgeInsets.zero,
+                    )
+                  ],
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 50,)
+          ]
+        )
     );
   }
 
@@ -185,7 +355,7 @@ class _CreateJobPageState extends State<CreateJobPage> {
               // ),
 
 
-              steps: _steps()
+              steps: _steps(),
           ),
 
           Expanded(
@@ -194,7 +364,6 @@ class _CreateJobPageState extends State<CreateJobPage> {
                 _bodyBuilder(_currentStep),
               ],
             )
-
           ),
 
           _actionButtons(),
@@ -202,35 +371,6 @@ class _CreateJobPageState extends State<CreateJobPage> {
           const SizedBox(height: 20,)
         ],
       )
-    );
-  }
-}
-
-
-class RequirementField extends StatefulWidget {
-
-  const RequirementField({
-    super.key,
-    this.text,
-    required this.onTappedOut,
-    required this.controller
-  });
-
-  final String? text;
-  final VoidCallback onTappedOut;
-  final TextEditingController controller;
-
-  @override
-  State<RequirementField> createState() => _RequirementFieldState();
-}
-
-class _RequirementFieldState extends State<RequirementField> {
-
-
-  @override
-  Widget build(BuildContext context) {
-    return TextInput(
-        hintText: 'requirement',
     );
   }
 }

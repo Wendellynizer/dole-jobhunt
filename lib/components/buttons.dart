@@ -8,6 +8,7 @@ class Button extends StatelessWidget {
   final Color color;
   final VoidCallback onPressed;
   final BorderRadius? borderRadius;
+  final double? width;
 
 
   const Button({
@@ -15,7 +16,8 @@ class Button extends StatelessWidget {
     required this.content,
     required this.color,
     required this.onPressed,
-    this.borderRadius
+    this.borderRadius,
+    this.width
   });
 
   @override
@@ -25,6 +27,8 @@ class Button extends StatelessWidget {
       color: color,
       shape: RoundedRectangleBorder(borderRadius: (borderRadius == null)? border : borderRadius!),
       padding: buttonPadding,
+      minWidth: 5,
+
 
       elevation: 0,
       child: content,

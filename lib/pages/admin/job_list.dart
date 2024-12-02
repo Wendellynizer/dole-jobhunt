@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dole_jobhunt/components/searchbar.dart';
 import 'package:dole_jobhunt/main.dart';
+import 'package:dole_jobhunt/services/firestore_service.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dole_jobhunt/components/buttons.dart';
@@ -24,14 +26,18 @@ class _AdminJobListState extends State<AdminJobList> {
     ["IT Support", "XYZ Company", 20000, 30000.00, "Full Time", "1 year exp", 1, 12],
   ];
 
+  // CollectionReference fetchedJob = FireStoreService.read('jobs');
+
   @override
   Widget build(BuildContext context) {
+
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Jobs", style: headerStyle),
         backgroundColor: primaryColor,
       ),
-
 
       body: Padding(
         padding: horizontal,
@@ -56,32 +62,67 @@ class _AdminJobListState extends State<AdminJobList> {
             CustomSearchBar(),
 
             const SizedBox(height: 28,),
+            
+            // StreamBuilder(
+            //     stream: fetchedJob.snapshots(),
+            //     builder: (context, AsyncSnapshot<QuerySnapshot> streamSnap) {
+            //
+            //       if(streamSnap.hasData) {
+            //
+            //         return CustomScrollView(
+            //           slivers: [
+            //             SliverList.builder(
+            //               itemCount: streamSnap.data!.docs.length,
+            //               itemBuilder: (context, index) {
+            //                 final DocumentSnapshot data = streamSnap.data!.docs[index];
+            //
+            //                 return JobCard(
+            //                     jobTitle: data["jobTitle"],
+            //                     companyName: data["companyName"],
+            //                     minSalary: data["minSalary"],
+            //                     maxSalary: data["maxSalary"],
+            //                     jobType: data["jobType"],
+            //                     jobExp: data["jobType"],
+            //                     jobPosted: data["jobType"],
+            //                     applicantCount: data["jobType"],
+            //                     bottomMargin: 15,
+            //                 );
+            //               },
+            //             )
+            //           ],
+            //         );
+            //       } else {
+            //
+            //         return Center(child: CircularProgressIndicator(),);
+            //       }
+            //     }
+            // )
 
-            Expanded(
-              child: CustomScrollView(
-                slivers: [
-                  SliverList.builder(
-                    itemCount: jobCardsData.length,
-                    itemBuilder: (context, index) {
-                      print(jobCardsData.length);
-                      print("building item #$index");
-                      // all data here are only dummy
-                      return JobCard(
-                        jobTitle: jobCardsData[index][0],
-                        companyName: jobCardsData[index][1],
-                        minSalary: jobCardsData[index][2].toDouble(),
-                        maxSalary: jobCardsData[index][3].toDouble(),
-                        jobType: jobCardsData[index][4],
-                        jobExp: jobCardsData[index][5],
-                        jobPosted: jobCardsData[index][6],
-                        applicantCount: jobCardsData[index][7],
-                        bottomMargin: 15,
-                      );
-                    },
-                  )
-                ],
-              ),
-            )
+            // Expanded(
+            //   child: CustomScrollView(
+            //     slivers: [
+            //       SliverList.builder(
+            //         itemCount: jobCardsData.length,
+            //         itemBuilder: (context, index) {
+            //           print(jobCardsData.length);
+            //           print("building item #$index");
+            //           // all data here are only dummy
+            //           return JobCard(
+            //             jobTitle: jobCardsData[index][0],
+            //             companyName: jobCardsData[index][1],
+            //             minSalary: jobCardsData[index][2].toDouble(),
+            //             maxSalary: jobCardsData[index][3].toDouble(),
+            //             jobType: jobCardsData[index][4],
+            //             jobExp: jobCardsData[index][5],
+            //             jobPosted: jobCardsData[index][6],
+            //             applicantCount: jobCardsData[index][7],
+            //             bottomMargin: 15,
+            //           );
+            //         },
+            //       )
+            //     ],
+            //   ),
+            // )
           ],
         ),
       ),
