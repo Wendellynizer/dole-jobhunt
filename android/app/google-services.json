@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "907326974903",
+    "project_id": "dole-jobhunt",
+    "storage_bucket": "dole-jobhunt.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:907326974903:android:911abb43580e7bd0069632",
+        "android_client_info": {
+          "package_name": "com.example.dole_jobhunt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuEnbDKNS0s5rESkUOXm2fQI5TkWQY2eY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
