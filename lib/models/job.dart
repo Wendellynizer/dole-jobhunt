@@ -1,6 +1,7 @@
 import 'package:jiffy/jiffy.dart';
 
 class Job {
+  String? id;
   String jobTitle;
   double minSalary;
   double maxSalary;
@@ -9,10 +10,11 @@ class Job {
   String jobSummary;
   List<String> requirements;
   String category;
-  String timeUpdated = Jiffy.now().format().toString();
-  int applicantCount = 0;
+  String? timeUpdated = Jiffy.now().format().toString();
+  int? applicantCount = 0;
 
   Job({
+    this.id,
     required this.jobTitle,
     required this.minSalary,
     required this.maxSalary,
@@ -20,7 +22,9 @@ class Job {
     required this.jobType,
     required this.jobSummary,
     required this.requirements,
-    required this.category
+    required this.category,
+    this.applicantCount,
+    this.timeUpdated
   });
 
   toJSON() {
@@ -31,6 +35,8 @@ class Job {
       "max_salary": maxSalary,
       "experience": experience,
       "job_type": jobType,
+      "job_description": jobSummary,
+      "requirements": requirements,
       "job_posted": timeUpdated,
       "application_count": applicantCount
     };

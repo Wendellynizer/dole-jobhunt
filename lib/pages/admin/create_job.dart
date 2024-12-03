@@ -207,8 +207,8 @@ class _CreateJobPageState extends State<CreateJobPage> {
           DropdownInput(
             hintText: 'Job Type',
             options: const [
-            DropdownMenuEntry<String>(value: "full time", label: "Full Time"),
-            DropdownMenuEntry<String>(value: "part time", label: "Part Time")
+            DropdownMenuEntry<String>(value: "Full Time", label: "Full Time"),
+            DropdownMenuEntry<String>(value: "Part Time", label: "Part Time")
             ],
 
             onSelected: (item) {
