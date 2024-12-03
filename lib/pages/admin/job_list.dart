@@ -30,10 +30,6 @@ class _AdminJobListState extends State<AdminJobList> {
 
   @override
   Widget build(BuildContext context) {
-
-    // fetch all jobs
-    final data = FireStoreService.getAll('jobs');
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Jobs", style: headerStyle),
