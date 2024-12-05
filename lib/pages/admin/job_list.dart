@@ -19,15 +19,6 @@ class AdminJobList extends StatefulWidget {
 
 class _AdminJobListState extends State<AdminJobList> {
 
-  // dummy data
-  List jobCardsData = [
-    ["IT Support", "XYZ Company", 20000, 30000.00, "Full Time", "1 year exp", 1, 12],
-    ["Janitor", "Giyoo's Company", 20000.0, 30000.0, "Part Time", "Fresher", 3, 7],
-    ["IT Support", "XYZ Company", 20000, 30000.00, "Full Time", "1 year exp", 1, 12],
-  ];
-
-  // CollectionReference fetchedJob = FireStoreService.read('jobs');
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,19 +52,25 @@ class _AdminJobListState extends State<AdminJobList> {
         
               const SizedBox(height: 28,),
 
-              // shows list of jobs available
-              FutureBuilder<List<dynamic>>(
-                  future: FireStoreService.getAll('jobs'),
+              StreamBuilder<List<dynamic>>(
+                  stream: FireStoreService.getAllJob(),
                   builder: (context, snapshot) {
-        
+
+                    // checks if snapshots has errors
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+
                     // checks if snapshot is done fetching
-                    if(snapshot.connectionState == ConnectionState.done) {
+                    if(snapshot.connectionState == ConnectionState.active) {
 
                       // shows no data message when there is no data
                       if(!snapshot.hasData) {
+                        // print(snapshot.data);
                         return const Center(child: Text('No jobs currently listed.'),);
                       }
-        
+
+                      // THE LIST!
                       return CustomScrollView(
                         shrinkWrap: true,
                         slivers: [
@@ -86,7 +83,6 @@ class _AdminJobListState extends State<AdminJobList> {
                               // calculate days from jobs posted
                               Jiffy datePosted = Jiffy.parse(job.timeUpdated!);
                               final diffInDays =  Jiffy.now().diff(datePosted, unit: Unit.day);
-                              print(diffInDays);
 
                               return JobCard(
                                 jobTitle: job.jobTitle,
@@ -100,6 +96,12 @@ class _AdminJobListState extends State<AdminJobList> {
                                 jobPosted: diffInDays as int,
                                 applicantCount: job.applicantCount!,
                                 bottomMargin: 20,
+
+                                routeTo: () {
+                                  // route to job details page
+
+                                  context.go('/job_details/${job.id}');
+                                },
                               );
                             },
                           )
@@ -110,7 +112,64 @@ class _AdminJobListState extends State<AdminJobList> {
                       return const Center(child: CircularProgressIndicator(),);
                     }
                   }
-              )
+              ),
+
+              // shows list of jobs available
+              // FutureBuilder<List<dynamic>>(
+              //     future: FireStoreService.getAll('jobs'),
+              //     builder: (context, snapshot) {
+              //
+              //       // checks if snapshot is done fetching
+              //       if(snapshot.connectionState == ConnectionState.done) {
+              //
+              //         // shows no data message when there is no data
+              //         if(!snapshot.hasData) {
+              //           print(snapshot.data);
+              //           return const Center(child: Text('No jobs currently listed.'),);
+              //         }
+              //
+              //         return CustomScrollView(
+              //           shrinkWrap: true,
+              //           slivers: [
+              //             SliverList.builder(
+              //               itemCount: snapshot.data!.length,
+              //               itemBuilder: (c, index) {
+              //
+              //                 Job job = snapshot.data?[index];
+              //
+              //                 // calculate days from jobs posted
+              //                 Jiffy datePosted = Jiffy.parse(job.timeUpdated!);
+              //                 final diffInDays =  Jiffy.now().diff(datePosted, unit: Unit.day);
+              //
+              //                 return JobCard(
+              //                   jobTitle: job.jobTitle,
+              //                   companyName: 'Test Name',
+              //                   minSalary: job.minSalary,
+              //                   maxSalary: job.maxSalary,
+              //                   jobType: job.jobType,
+              //                   jobExp: (job.experience > 0)
+              //                       ? '${job.experience} years experience'
+              //                       : 'Fresher',
+              //                   jobPosted: diffInDays as int,
+              //                   applicantCount: job.applicantCount!,
+              //                   bottomMargin: 20,
+              //
+              //                   routeTo: () {
+              //                     // route to job details page
+              //
+              //                     context.go('/job_details/${job.id}');
+              //                   },
+              //                 );
+              //               },
+              //             )
+              //           ],
+              //         );
+              //       }
+              //       else {
+              //         return const Center(child: CircularProgressIndicator(),);
+              //       }
+              //     }
+              // )
             ],
           ),
         ),
@@ -132,6 +191,7 @@ class JobCard extends StatefulWidget {
     required this.jobExp,
     required this.jobPosted,
     required this.applicantCount,
+    required this.routeTo,
     this.bottomMargin
   });
 
@@ -144,6 +204,7 @@ class JobCard extends StatefulWidget {
   final int jobPosted;
   final int applicantCount;
   final double? bottomMargin;
+  final Function()? routeTo;
 
   @override
   State<JobCard> createState() => _JobCardState();
@@ -166,7 +227,7 @@ class _JobCardState extends State<JobCard> {
       margin: EdgeInsets.only(bottom: (widget.bottomMargin == null)? 0 : widget.bottomMargin!),
       child: MaterialButton(
           // material button properties
-          onPressed: () {},
+          onPressed: widget.routeTo,
           color: light,
           padding: cardPadding,
 

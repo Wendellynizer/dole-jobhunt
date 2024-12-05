@@ -13,12 +13,13 @@ Color hintColor = Color(0x000000).withOpacity(0.3);
 // texts
 // text sizes
 double text_xs = 12.0;
-double text_sm = 12.0;
-double text_md = 14.0;
+double text_sm = 14.0;
+double text_md = 16.0;
 double text_lg = 18.0;
 
 double text_h6 = 24.0;
-double text_h5 = 30.0;
+double text_h5 = 26.0;
+double text_h4 = 30.0;
 
 // font weights
 FontWeight bold = FontWeight.bold;

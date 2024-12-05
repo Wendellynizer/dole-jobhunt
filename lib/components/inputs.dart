@@ -1,6 +1,7 @@
 import 'package:dole_jobhunt/globals/style.dart';
 import 'package:flutter/material.dart';
 
+// STATELESS
 class TextInput extends StatelessWidget {
   const TextInput({
     super.key,
@@ -79,18 +80,20 @@ class NumberInput extends StatelessWidget {
   }
 }
 
-// dropdown
+// dropdown inpu
 class DropdownInput extends StatelessWidget {
   const DropdownInput({
     super.key,
     required this.hintText,
     required this.options,
-    required this.onSelected
+    required this.onSelected,
+    this.initialValue
   });
 
   final String hintText;
   final List<DropdownMenuEntry<dynamic>> options;
   final ValueChanged<dynamic> onSelected;
+  final String? initialValue;
 
   @override
   Widget build(BuildContext context) {
@@ -101,6 +104,7 @@ class DropdownInput extends StatelessWidget {
       borderRadius: borderSM,
 
       child: DropdownMenu(
+        initialSelection: initialValue,
         onSelected: onSelected,
         menuStyle: MenuStyle(
           backgroundColor: WidgetStatePropertyAll(light),
@@ -159,3 +163,51 @@ class TextArea extends StatelessWidget {
   }
 }
 
+// STATEFUL
+
+class PassField extends StatefulWidget {
+  const PassField({
+    super.key,
+    required this.hintText,
+    this.autoFocus,
+    this.controller
+  });
+
+  final String hintText;
+  final bool? autoFocus;
+  final TextEditingController? controller;
+
+  @override
+  State<PassField> createState() => _PassFieldState();
+}
+
+class _PassFieldState extends State<PassField> {
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      // material design for box shadow
+      shadowColor: dark50,
+      elevation: 1,
+      borderRadius: borderSM,
+
+
+      child: TextField(
+        controller: widget.controller,
+        obscureText: true,
+        autocorrect: false,
+        autofocus: (widget.autoFocus == null)? false : widget.autoFocus!,
+        decoration: InputDecoration(
+          hintText: widget.hintText,
+          hintStyle: TextStyle(color: hintColor),
+
+
+          filled: true,
+          fillColor: light,
+          border: const OutlineInputBorder(
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+}

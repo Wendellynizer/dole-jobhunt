@@ -3,6 +3,7 @@ import 'package:dole_jobhunt/components/inputs.dart';
 import 'package:dole_jobhunt/services/firestore_service.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_stepper/easy_stepper.dart';
+import 'package:jiffy/jiffy.dart';
 
 import '../../globals/style.dart';
 import '../../models/job.dart';
@@ -141,6 +142,7 @@ class _CreateJobPageState extends State<CreateJobPage> {
                     jobType: jobType,
                     jobSummary: jobSummaryCtrl.text,
                     requirements: _requirements,
+                    timeUpdated: Jiffy.now().format().toString()
                   );
 
                   FireStoreService.create('jobs', job.toJSON());

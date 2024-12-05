@@ -11,7 +11,7 @@ class Job {
   List<String> requirements;
   String category;
   String? timeUpdated = Jiffy.now().format().toString();
-  int? applicantCount = 0;
+  int? applicantCount;
 
   Job({
     this.id,
@@ -23,7 +23,7 @@ class Job {
     required this.jobSummary,
     required this.requirements,
     required this.category,
-    this.applicantCount,
+    this.applicantCount = 0,
     this.timeUpdated
   });
 
@@ -38,7 +38,7 @@ class Job {
       "job_description": jobSummary,
       "requirements": requirements,
       "job_posted": timeUpdated,
-      "application_count": applicantCount
+      "applicant_count": applicantCount
     };
   }
 }
