@@ -1,11 +1,16 @@
+import 'dart:math';
+
 import 'package:dole_jobhunt/components/searchbar.dart';
+import 'package:dole_jobhunt/globals/data.dart';
 import 'package:dole_jobhunt/services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dole_jobhunt/components/buttons.dart';
 import 'package:dole_jobhunt/components/icon_text.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jiffy/jiffy.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../components/label.dart';
 import '../../globals/style.dart';
 import '../../models/job.dart';
@@ -19,6 +24,7 @@ class AdminJobList extends StatefulWidget {
 
 class _AdminJobListState extends State<AdminJobList> {
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,10 +33,10 @@ class _AdminJobListState extends State<AdminJobList> {
         backgroundColor: primaryColor,
       ),
 
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: horizontal,
-        
+      body: Padding(
+        padding: horizontal,
+
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -40,21 +46,33 @@ class _AdminJobListState extends State<AdminJobList> {
                   color: secondaryColor,
                   onPressed: () {
                     // navigate to create job page
-                    context.go('/create_job');
+                    context.go('/admin_page/create_job');
                   },
-                  borderRadius: borderSM,
+                  borderRadius: borderL,
               ),
-        
+
               const SizedBox(height: 20,),
-        
-              // search bar
-              const CustomSearchBar(),
-        
+
+              // searchbar
+              SearchBar(
+                hintText: 'Search here...',
+                leading: const Icon(Icons.search_rounded),
+                backgroundColor:  WidgetStatePropertyAll(light),
+                shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                    borderRadius: borderL
+                )),
+                elevation: const WidgetStatePropertyAll(1),
+                padding: const WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 20)
+                ),
+              ),
+
               const SizedBox(height: 28,),
 
               StreamBuilder<List<dynamic>>(
-                  stream: FireStoreService.getAllJob(),
+                  stream: FireStoreService.getJobs(DataStorage.uid),
                   builder: (context, snapshot) {
+
 
                     // checks if snapshots has errors
                     if (snapshot.hasError) {
@@ -65,8 +83,7 @@ class _AdminJobListState extends State<AdminJobList> {
                     if(snapshot.connectionState == ConnectionState.active) {
 
                       // shows no data message when there is no data
-                      if(!snapshot.hasData) {
-                        // print(snapshot.data);
+                      if(!snapshot.hasData || snapshot.data!.isEmpty) {
                         return const Center(child: Text('No jobs currently listed.'),);
                       }
 
@@ -86,21 +103,20 @@ class _AdminJobListState extends State<AdminJobList> {
 
                               return JobCard(
                                 jobTitle: job.jobTitle,
-                                companyName: 'Test Name',
+                                companyName: job.companyName,
                                 minSalary: job.minSalary,
                                 maxSalary: job.maxSalary,
                                 jobType: job.jobType,
                                 jobExp: (job.experience > 0)
-                                    ? '${job.experience} years experience'
+                                    ? '${job.experience}+ years experience'
                                     : 'Fresher',
                                 jobPosted: diffInDays as int,
-                                applicantCount: job.applicantCount!,
+                                applicantCount: job.applicants!.length,
                                 bottomMargin: 20,
 
                                 routeTo: () {
                                   // route to job details page
-
-                                  context.go('/job_details/${job.id}');
+                                  context.go('/admin_page/job_details/${job.id}');
                                 },
                               );
                             },
@@ -114,62 +130,6 @@ class _AdminJobListState extends State<AdminJobList> {
                   }
               ),
 
-              // shows list of jobs available
-              // FutureBuilder<List<dynamic>>(
-              //     future: FireStoreService.getAll('jobs'),
-              //     builder: (context, snapshot) {
-              //
-              //       // checks if snapshot is done fetching
-              //       if(snapshot.connectionState == ConnectionState.done) {
-              //
-              //         // shows no data message when there is no data
-              //         if(!snapshot.hasData) {
-              //           print(snapshot.data);
-              //           return const Center(child: Text('No jobs currently listed.'),);
-              //         }
-              //
-              //         return CustomScrollView(
-              //           shrinkWrap: true,
-              //           slivers: [
-              //             SliverList.builder(
-              //               itemCount: snapshot.data!.length,
-              //               itemBuilder: (c, index) {
-              //
-              //                 Job job = snapshot.data?[index];
-              //
-              //                 // calculate days from jobs posted
-              //                 Jiffy datePosted = Jiffy.parse(job.timeUpdated!);
-              //                 final diffInDays =  Jiffy.now().diff(datePosted, unit: Unit.day);
-              //
-              //                 return JobCard(
-              //                   jobTitle: job.jobTitle,
-              //                   companyName: 'Test Name',
-              //                   minSalary: job.minSalary,
-              //                   maxSalary: job.maxSalary,
-              //                   jobType: job.jobType,
-              //                   jobExp: (job.experience > 0)
-              //                       ? '${job.experience} years experience'
-              //                       : 'Fresher',
-              //                   jobPosted: diffInDays as int,
-              //                   applicantCount: job.applicantCount!,
-              //                   bottomMargin: 20,
-              //
-              //                   routeTo: () {
-              //                     // route to job details page
-              //
-              //                     context.go('/job_details/${job.id}');
-              //                   },
-              //                 );
-              //               },
-              //             )
-              //           ],
-              //         );
-              //       }
-              //       else {
-              //         return const Center(child: CircularProgressIndicator(),);
-              //       }
-              //     }
-              // )
             ],
           ),
         ),
@@ -225,6 +185,7 @@ class _JobCardState extends State<JobCard> {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(bottom: (widget.bottomMargin == null)? 0 : widget.bottomMargin!),
+
       child: MaterialButton(
           // material button properties
           onPressed: widget.routeTo,
@@ -248,15 +209,10 @@ class _JobCardState extends State<JobCard> {
                     decoration: BoxDecoration(
                       color: Color(0xffffff).withOpacity(0.6),
                       borderRadius: borderSM,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0x000000).withOpacity(0.2),
-                          blurRadius: 1,
-                        )
-                      ]
                     ),
-
-                    child: Image.asset('lib/images/google-icon.webp', fit: BoxFit.cover),
+                    child: Image.network(
+                    Supabase.instance.client.storage.from('file_uploads').getPublicUrl(DataStorage.imagePath),
+                    fit: BoxFit.cover),
                   ),
 
                   const SizedBox(width: 14,),
@@ -266,7 +222,7 @@ class _JobCardState extends State<JobCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(widget.jobTitle, style: TextStyle(fontSize: text_lg, fontWeight: bold),),
-                      Text(widget.companyName, style: TextStyle(color: dark50, fontSize: text_xs, fontWeight: medium),),
+                      // Text(widget.companyName, style: TextStyle(color: dark50, fontSize: text_xs, fontWeight: medium),),
                     ],
                   ),
                 ],
@@ -276,11 +232,12 @@ class _JobCardState extends State<JobCard> {
 
               // salary details
               IconText(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   icon: Icon(Icons.payment_rounded, color: dark50, size: 28,),
                   content: Text(
                     "${widget.minSalary} - ${widget.maxSalary}/month",
                     style: TextStyle(
-                        color: dark50, fontSize: text_lg, fontWeight: semibold),
+                        color: dark50, fontSize: text_md, fontWeight: semibold),
                   )),
 
               const SizedBox(height: 20,),
@@ -327,10 +284,11 @@ class _JobCardState extends State<JobCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconText(
-                      icon: Icon(Icons.history_rounded, color: dark50,),
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    icon: Icon(Icons.history_rounded, color: dark50,),
                     content: Text(
                       getDayHistory(widget.jobPosted),
-                      style: TextStyle(color: dark50, fontSize: text_md),
+                      style: TextStyle(color: dark50, fontSize: text_sm),
                     ),
                     width: 6,
                   ),
@@ -343,10 +301,10 @@ class _JobCardState extends State<JobCard> {
                       ),
 
                       child: Text(
-                      "${widget.applicantCount} Applicant/s",
+                      "${widget.applicantCount} applicant/s",
                       style: TextStyle(
                         color: secondaryColor,
-                        fontSize: text_md,
+                        fontSize: text_sm,
                       ),
                     )
                   )

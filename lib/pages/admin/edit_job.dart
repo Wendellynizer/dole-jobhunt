@@ -1,5 +1,6 @@
 import 'package:dole_jobhunt/components/buttons.dart';
 import 'package:dole_jobhunt/components/inputs.dart';
+import 'package:dole_jobhunt/services/auth.dart';
 import 'package:dole_jobhunt/services/firestore_service.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_stepper/easy_stepper.dart';

@@ -1,9 +1,12 @@
 import 'package:dole_jobhunt/components/buttons.dart';
 import 'package:dole_jobhunt/components/inputs.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../globals/style.dart';
+import '../services/auth.dart';
+import '../util/pref_handler.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +16,41 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+
+  final emailCtrl = TextEditingController();
+  final passwordCtrl = TextEditingController();
+
+  Future<void> _login() async {
+    emailCtrl.text = 'blaze@gmail.com';
+    passwordCtrl.text = 'qwerty';
+
+    // validate fields
+    if(emailCtrl.text.isEmpty || passwordCtrl.text.isEmpty) {
+      print('empty field/s');
+
+      return;
+    }
+
+    UserCredential? credential = await Auth.signIn(
+        email: emailCtrl.text.trim(),
+        password: passwordCtrl.text.trim()
+    );
+
+    // check if there is user
+    if(credential == null) {
+      print('no account found');
+      return;
+    }
+
+    // save uid in pref
+    PrefHandler.savePref('uid', credential.user!.uid);
+
+    // navigate to checkrolepage after signing up
+    if(mounted) {
+      context.go('/check_role');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,7 +106,8 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox( height: 50,),
 
                 TextInput(
-                  hintText: 'Username',
+                  hintText: 'Email',
+                  controller: emailCtrl,
                 ),
 
                 const SizedBox(height: 10,),
@@ -76,6 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                 // password field
                 PassField(
                   hintText: 'Password',
+                  controller: passwordCtrl,
                 ),
 
                 const SizedBox(height: 30,),
@@ -94,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                        ),),
                        color: secondaryColor,
                        borderRadius: borderSM,
-                       onPressed: () {},
+                       onPressed: _login,
                      ),
                    ),
                  ],

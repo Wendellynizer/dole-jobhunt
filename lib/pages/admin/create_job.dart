@@ -1,6 +1,9 @@
 import 'package:dole_jobhunt/components/buttons.dart';
 import 'package:dole_jobhunt/components/inputs.dart';
+import 'package:dole_jobhunt/globals/data.dart';
 import 'package:dole_jobhunt/services/firestore_service.dart';
+import 'package:dole_jobhunt/util/pref_handler.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_stepper/easy_stepper.dart';
 import 'package:jiffy/jiffy.dart';
@@ -17,6 +20,7 @@ class CreateJobPage extends StatefulWidget {
 
 class _CreateJobPageState extends State<CreateJobPage> {
 
+  String? _uid;
   int _currentStep = 0;
   bool _isAddingReq = false;
 
@@ -41,7 +45,7 @@ class _CreateJobPageState extends State<CreateJobPage> {
       customStep: CircleAvatar(
         radius: 20,
         backgroundColor: light,
-        child: Icon(Icons.work_rounded),
+        child: const Icon(Icons.work_rounded),
       ),
     ),
 
@@ -49,10 +53,11 @@ class _CreateJobPageState extends State<CreateJobPage> {
       customStep: CircleAvatar(
         radius: 20,
         backgroundColor: light,
-        child: Icon(Icons.info_rounded),
+        child: const Icon(Icons.info_rounded),
       ),
     )
   ];
+
 
   void _onStepContinue() {
     setState(() {
@@ -95,7 +100,6 @@ class _CreateJobPageState extends State<CreateJobPage> {
   }
 
 
-
   // controls the widget the body is showing
   Widget _bodyBuilder(int step) {
     switch(step) {
@@ -104,57 +108,6 @@ class _CreateJobPageState extends State<CreateJobPage> {
     }
 
     return _jobDetails();
-  }
-
-  // action buttons
-  Widget _actionButtons() {
-    return Padding(
-      padding: horizontal,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Button(
-              content: Text('Back', style: TextStyle(fontSize: text_lg),),
-              color: Color(0x000000).withOpacity(0.1),
-              borderRadius: borderSM,
-              onPressed: _onStepBack
-          ),
-
-          const SizedBox(width: 15,),
-
-          Button(
-              content: Text(
-                buttonText,
-                style: TextStyle(fontSize: text_lg, color: light),
-              ),
-              color: secondaryColor,
-              borderRadius: borderSM,
-              onPressed: () {
-                // execute save function of _current step is in last step
-                if(_currentStep >= _steps().length - 1) {
-
-                  Job job = Job(
-                    category: jobCategory,
-                    jobTitle: jobTitleCtrl.text,
-                    minSalary: double.parse(minSalaryCtrl.text),
-                    maxSalary: double.parse(maxSalaryCtrl.text),
-                    experience: int.parse(experienceCtrl.text),
-                    jobType: jobType,
-                    jobSummary: jobSummaryCtrl.text,
-                    requirements: _requirements,
-                    timeUpdated: Jiffy.now().format().toString()
-                  );
-
-                  FireStoreService.create('jobs', job.toJSON());
-                  return;
-                }
-
-                _onStepContinue();
-              }
-          ),
-        ],
-      ),
-    );
   }
 
   // job details widget
@@ -337,6 +290,67 @@ class _CreateJobPageState extends State<CreateJobPage> {
     );
   }
 
+  // action buttons
+  Widget _actionButtons() {
+    return Padding(
+      padding: horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // back button
+          Button(
+              content: Text('Back', style: TextStyle(fontSize: text_lg),),
+              color: Color(0x000000).withOpacity(0.1),
+              borderRadius: borderSM,
+              onPressed: _onStepBack
+          ),
+
+          const SizedBox(width: 15,),
+
+          // next/save button
+          Button(
+              content: Text(
+                buttonText,
+                style: TextStyle(fontSize: text_lg, color: light),
+              ),
+              color: secondaryColor,
+              borderRadius: borderSM,
+              onPressed: () {
+                // execute save function of _current step is in last step
+                if(_currentStep >= _steps().length - 1) {
+
+                  // creating job object
+                  Job job = Job(
+                      ownerID: DataStorage.uid,
+                      imagePath: DataStorage.imagePath,
+                      companyName: DataStorage.companyName,
+                      purok: DataStorage.purok,
+                      baranggay: DataStorage.baranggay,
+                      city: DataStorage.city,
+                      category: jobCategory,
+                      jobTitle: jobTitleCtrl.text,
+                      minSalary: double.parse(minSalaryCtrl.text),
+                      maxSalary: double.parse(maxSalaryCtrl.text),
+                      experience: int.parse(experienceCtrl.text),
+                      jobType: jobType,
+                      jobSummary: jobSummaryCtrl.text,
+                      requirements: _requirements,
+                      timeUpdated: Jiffy.now().format().toString()
+                  );
+
+                  FireStoreService.create('jobs', job.toJSON());
+
+                  Navigator.of(context).pop();
+                }
+
+                _onStepContinue();
+              }
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -352,10 +366,6 @@ class _CreateJobPageState extends State<CreateJobPage> {
               activeStep: _currentStep,
               showLoadingAnimation: false,
               stepRadius: 20,
-              // lineStyle: LineStyle(
-              //     lineType: LineType.normal
-              // ),
-
 
               steps: _steps(),
           ),

@@ -1,8 +1,9 @@
 import 'package:dole_jobhunt/globals/style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // STATELESS
-class TextInput extends StatelessWidget {
+class TextInput extends StatefulWidget {
   const TextInput({
     super.key,
     required this.hintText,
@@ -15,6 +16,11 @@ class TextInput extends StatelessWidget {
   final TextEditingController? controller;
 
   @override
+  State<TextInput> createState() => _TextInputState();
+}
+
+class _TextInputState extends State<TextInput> {
+  @override
   Widget build(BuildContext context) {
     return Material(
       // material design for box shadow
@@ -24,10 +30,12 @@ class TextInput extends StatelessWidget {
 
 
       child: TextField(
-        controller: controller,
-        autofocus: (autoFocus == null)? false : autoFocus!,
+        controller: widget.controller,
+        autocorrect: false,
+        enableSuggestions: false,
+        autofocus: false,
         decoration: InputDecoration(
-            hintText: hintText,
+            hintText: widget.hintText,
             hintStyle: TextStyle(color: hintColor),
 
 
@@ -63,7 +71,14 @@ class NumberInput extends StatelessWidget {
 
       child: TextField(
         controller: controller,
+
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly
+        ],
         keyboardType: TextInputType.number,
+        autocorrect: false,
+        enableSuggestions: false,
+
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: hintColor),

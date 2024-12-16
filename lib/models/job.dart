@@ -1,7 +1,14 @@
+import 'package:dole_jobhunt/globals/data.dart';
 import 'package:jiffy/jiffy.dart';
 
 class Job {
   String? id;
+  String? ownerID;
+  String? imagePath;
+  String companyName;
+  String? purok;
+  String?  baranggay;
+  String? city;
   String jobTitle;
   double minSalary;
   double maxSalary;
@@ -11,10 +18,16 @@ class Job {
   List<String> requirements;
   String category;
   String? timeUpdated = Jiffy.now().format().toString();
-  int? applicantCount;
+  List<String>? applicants = [];
 
   Job({
     this.id,
+    this.ownerID,
+    this.purok,
+    this.baranggay,
+    this.city,
+    this.imagePath,
+    required this.companyName,
     required this.jobTitle,
     required this.minSalary,
     required this.maxSalary,
@@ -23,12 +36,18 @@ class Job {
     required this.jobSummary,
     required this.requirements,
     required this.category,
-    this.applicantCount = 0,
+    this.applicants,
     this.timeUpdated
   });
 
   toJSON() {
     return {
+      "owner_id": ownerID,
+      "image_path": imagePath,
+      "company_name": companyName,
+      "purok": purok,
+      "baranggay": baranggay,
+      "city": city,
       "job_category": category,
       "job_title": jobTitle,
       "min_salary": minSalary,
@@ -38,7 +57,7 @@ class Job {
       "job_description": jobSummary,
       "requirements": requirements,
       "job_posted": timeUpdated,
-      "applicant_count": applicantCount
+      "applicants": applicants = []
     };
   }
 }
