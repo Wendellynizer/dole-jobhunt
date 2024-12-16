@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+
 import '../globals/style.dart';
 import '../services/auth.dart';
 import '../util/pref_handler.dart';
@@ -21,8 +22,8 @@ class _LoginPageState extends State<LoginPage> {
   final passwordCtrl = TextEditingController();
 
   Future<void> _login() async {
-    emailCtrl.text = 'blaze@gmail.com';
-    passwordCtrl.text = 'qwerty';
+    // emailCtrl.text = 'blaze@gmail.com';
+    // passwordCtrl.text = 'qwerty';
 
     // validate fields
     if(emailCtrl.text.isEmpty || passwordCtrl.text.isEmpty) {
